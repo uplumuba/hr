@@ -74,7 +74,7 @@ function App() {
 
   return (
     
-    <div>
+    <div className="w-screen overflow-hidden">
       {!isLoggedIn && <Login onLoginClick={handleLoginClick} handleSignUpClick={handleSignUpClick} />}
       {isLoggedIn && (
         <>
@@ -82,7 +82,7 @@ function App() {
             <ColorModeContext.Provider value={colorMode}>
               <ThemeProvider theme={theme}>
                 <CssBaseline />
-                <div style={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
+                <div style={{ display: 'flex', minHeight: '100vh', width: '100%', overflow: 'hidden' }}>
                   <Sidebar isSidebar={isSidebar} />
                   <main className="content">
                     <Topbar setIsSidebar={setIsSidebar} />

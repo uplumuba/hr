@@ -43,6 +43,8 @@ router.put('/adminEmail/:id',verifyToken, controller.editAdminEmail);
 router.put('/adminPassword/:id',verifyToken, controller.editAdminPassword);
 router.put('/addAdminimg/:id', verifyToken,controller.editAdminProfilePic);
 router.put('/addAdmincv/:id', verifyToken,controller.editAdminCV);
+router.get('/attendance/:month',verifyToken, controller.getAttendance);
+router.post('/attendance/:month/:id',verifyToken, controller.updateAttendance);
 
  
  

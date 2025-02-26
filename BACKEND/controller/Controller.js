@@ -13,10 +13,100 @@ const Applicant = require('../models/Applicants_DB');
 const Admin = require("../models/Admin")
 const jwt = require("jsonwebtoken")
 const Subscription = require('../models/Subscription');
-
+const Attendance= require('../models/Attendance');
 const { getIO } = require('../socket'); 
 const fs = require('fs');
 const path = require('path');
+const { console } = require("inspector");
+const { get } = require("http");
+const getMonthNumber = (monthName) => new Date(`${monthName} 1, 2000`).getMonth();
+const getDaysInMonth = (monthName, year) => new Date(year, getMonthNumber(monthName) + 1, 0).getDate();
+
+const getAttendance = async (req, res) => {
+  try {
+    const month = req.params.month;
+    const year = new Date().getFullYear();
+    const daysInMonth = getDaysInMonth(month, year);
+
+    const employees = await Employee.find();
+   
+
+   
+    for (const employee of employees) {
+      let attendance = await Attendance.findOne({
+        employee: employee._id,
+        month,
+        year
+      });
+      
+
+      if (!attendance) {
+        // Create new attendance record
+        attendance = new Attendance({
+          employee: employee._id,
+          month,
+          year,
+          days: Array.from({ length: daysInMonth }, (_, i) => ({
+            day: i + 1,
+            status: 'Absent'
+          }))
+        });
+      } else {
+        // Update existing record if days count changed
+        const currentDays = attendance.days.length;
+        if (currentDays !== daysInMonth) {
+          attendance.days = Array.from({ length: daysInMonth }, (_, i) => ({
+            day: i + 1,
+            status: (attendance.days[i] || {}).status || 'Absent'
+          }));
+        }
+      }
+      
+      
+      await attendance.save();
+    }
+
+    const attendanceRecords = await Attendance.find({ month, year })
+      .populate('employee', 'firstName lastName');
+
+    res.json(attendanceRecords.map(record => ({
+      id: record.employee._id,
+      employee_name: `${record.employee.firstName} ${record.employee.lastName}`,
+      days: record.days
+    })));
+
+  } catch (error) {
+    console.error('Error fetching attendance:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch attendance data',
+      details: error.message
+    });
+  }
+};
+const updateAttendance= async (req, res) => {
+  try {
+
+    const { month, id } = req.params;
+    const { days } = req.body;
+    console.log("updating")
+console.log(days)
+    const attendance = await Attendance.findOneAndUpdate(
+      { 
+        employee: id,
+        month,
+        year: new Date().getFullYear()
+      },
+      { days },
+      { new: true }
+    );
+console.log(attendance)
+    if (!attendance) return res.status(404).json({ error: 'Record not found' });
+    res.json({ message: 'Attendance updated successfully' });
+  } catch (error) {
+    console.log('Error updating attendance:', error);
+    res.status(500).json({ error: 'Failed to update attendance' });
+  }
+}
 
 const getPieChartData = async (req, res) => {
   try {
@@ -491,7 +581,9 @@ const deleteDeduction = async (req, res) => {
 
 
 const generatePayslip = async (req, res) => {
+  console.log("attendance")
   const employeeId = req.params.id;
+ 
 
   try {
     // Fetch employee details
@@ -519,18 +611,42 @@ const generatePayslip = async (req, res) => {
         value: allowance.value
       });
     });
-
+const months=[
+  'January', 'February', 'March', 'April',
+  'May', 'June', 'July', 'August',
+  'September', 'October', 'November', 'December'
+]
     // Fetch tax percentage based on employee designation
     const deduction = await Deduction.findOne({ designation: employee.designation });
     if (!deduction) {
       return res.status(404).json({ message: 'Tax percentage not found for the employee' });
     }
+const thisMonth = new Date().getMonth();
+const thisYear = new Date().getFullYear();
 
-    // Calculate tax amount
+    const attendance = await Attendance.findOne({ employee: employeeId,
+      month: months[thisMonth],
+      year: thisYear
+     });
+     
+    if (!attendance) {
+      return res.status(404).json({ message: 'Attendance not found for the employee' });
+    }
+    console.log(attendance)
+    const getAttendanceDeductionPercentage = (days) => {
+      const totalDays = days.length;
+      const absentDays = days.filter(day => day.status === 'Absent').length;
+      return (absentDays / totalDays) * 100;
+    };
+    const attendancededuction=getAttendanceDeductionPercentage(attendance.days);
+  
+    const attendanceamount=attendancededuction/100*basicSalary.salary;
+
+    
     const taxAmount = (deduction.tax / 100) * basicSalary.salary;
     const sub_total=basicSalary.salary + totalAllowance;
     // Calculate total salary
-    const totalSalary = sub_total - taxAmount;
+    const totalSalary = sub_total - taxAmount-attendanceamount;
 
     // Prepare payslip data
     const payslip = {
@@ -543,12 +659,14 @@ const generatePayslip = async (req, res) => {
       taxAmount,
       sub_total,
       totalSalary,
+      attendancededuction,
+      attendanceamount
     };
 
     res.status(200).json(payslip);
   } catch (error) {
     console.error('Error generating payslip:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -722,7 +840,7 @@ const addAppliedApplicants = async (req, res) => {
   const { jobTitle, applicants } = req.body;
 
   try {
-      // Check if jobTitle and applicants array are provided
+     
       if (!jobTitle || !Array.isArray(applicants)) {
           return res.status(400).json({ error: 'Invalid input data' });
       }
@@ -802,8 +920,8 @@ const shortlistApplicant = async (req, res) => {
 };
 
 const unshortlistApplicant = async (req, res) => {
-  const { jobId } = req.body; // Get the job title from the request body
-  const { applicantId } = req.params; // Get the applicant ID from the URL parameter
+  const { jobId } = req.body; 
+  const { applicantId } = req.params; 
 
   try {
     const appliedApplicant = await AppliedApplicant.findOne({ jobTitle: jobId });
@@ -1492,6 +1610,7 @@ module.exports = {
   subscribe, getAllSubscribers,
   countEmployeesByDesignation,
   addLeaveRequest,getAllLeaveRequests,cancelLeaveRequest,
+  getAttendance,updateAttendance,
   approveLeaveRequest,rejectLeaveRequest, getAllLeaveRequestsbyid,getAllApplicants, getPieChartData,
 };
  

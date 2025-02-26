@@ -20,7 +20,7 @@ const Attendence = () => {
       <Header title="ATTENDANCE" subtitle="Attendance Sheets" />
       <Tabs value={tabValue} onChange={handleTabChange} aria-label="Nested Tabs">
         <Tab label="Attendance Sheet" />
-        <Tab label="Today's Attendance" />
+
       </Tabs>
       {tabValue === 0 && (
         <div>

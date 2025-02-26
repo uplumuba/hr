@@ -15,14 +15,18 @@ import SendIcon from '@mui/icons-material/Send';
 import DownloadIcon from '@mui/icons-material/Download';
 import SaveIcon from '@mui/icons-material/Save';
 import axiosInstance from "../../utilis/ApiRequest.js";
-
+import moment from "moment";
 import {
   Box,
   useTheme,
+  Typography,
+ListItemText,
+ListItem,List,
   Tab,
   TextField,
   Tabs,
   Button,
+  CircularProgress,
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -102,6 +106,7 @@ const [openDialog, setOpenDialog] = useState(false);
     designation: '',
     salary: '',
   });
+  const [isloading, setisLoading] = useState(false);
   const [designationsSalaries, setDesignationsSalaries] = useState([]);
   const [editedDesignationSalary, setEditedDesignationSalary] = useState(null);
   const [isBasicSalaryEditDialogOpen, setIsBasicSalaryEditDialogOpen] = useState(false);
@@ -261,6 +266,7 @@ const [values, setValues] = useState({
     try {
       const response = await axiosInstance.get("http://localhost:5000/api/get_allowances");
       setAllowances(response.data);
+      console.log(response.data);
     } catch (error) {
       console.error("Error fetching allowances:", error);
     }
@@ -335,6 +341,8 @@ const handleEditedAllowanceChange = (e) => {
     try {
       const response = await axiosInstance.get("http://localhost:5000/api/get_basic_salaries");
       setDesignationsSalaries(response.data);
+      console.log("basic salaries");
+      console.log(response.data);
     } catch (error) {
       console.error("Error fetching designation salaries:", error);
     }
@@ -408,6 +416,7 @@ const handleEditedAllowanceChange = (e) => {
   const fetchDeductions = async () => {
     try {
       const response = await axiosInstance.get("http://localhost:5000/api/get_deductions");
+      console.log(response.data);
       setDeductions(response.data);
     } catch (error) {
       console.error("Error fetching deductions:", error);
@@ -480,8 +489,10 @@ const handleEditedAllowanceChange = (e) => {
 
   const fetchPayslipData = async (id) => {
     try {
-      const response = await axiosInstance.get(`http://localhost:5000/api/payslip/${id}`);
+      setisLoading(true)
+      const response = await axiosInstance.get(`/payslip/${id}`);
       if (response.status === 200) {
+        console.log(response.data);
         
         setPayslipData(response.data);
         const employeeIndex = employeeData.findIndex((employee) => employee._id === id);
@@ -492,10 +503,13 @@ const handleEditedAllowanceChange = (e) => {
         setEmployeeData(updatedEmployeeData);
 
       } else {
+       
         console.error('Failed to fetch payslip data');
       }
+      setisLoading(false)
       }
     } catch (error) {
+      setisLoading(false)
       console.error('Error fetching payslip data:', error);
     }
   };
@@ -509,8 +523,7 @@ const handleEditedAllowanceChange = (e) => {
 
   
   
- /////////////////////////////////////////////////////////////////////////////////
- 
+
   return (
     <Box m="20px">
     <Tabs value={activeTab} onChange={handleTabChange}>
@@ -518,6 +531,7 @@ const handleEditedAllowanceChange = (e) => {
       <Tab label="Basic Salary" value="DesignationSalary" />
       <Tab label="Allowances" value="Allowances" />
       <Tab label="Deductions" value="Deductions" />
+    
       
     </Tabs>
  
@@ -559,7 +573,7 @@ const handleEditedAllowanceChange = (e) => {
         <TableHead >
           <TableRow  sx={{ backgroundColor: colors.blueAccent[700] }}>
             <TableCell>Designation</TableCell>
-            <TableCell>Salary (PKR)</TableCell>
+            <TableCell>Salary (Birr)</TableCell>
             <TableCell>Actions</TableCell>
           </TableRow>
         </TableHead>
@@ -648,7 +662,7 @@ const handleEditedAllowanceChange = (e) => {
           <TableHead>
             <TableRow sx={{ backgroundColor: colors.blueAccent[700] }}>
               <TableCell>Type</TableCell>
-              <TableCell>Amount (PKR)</TableCell>
+              <TableCell>Amount (Birr)</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -739,7 +753,7 @@ const handleEditedAllowanceChange = (e) => {
         <TableHead>
           <TableRow sx={{ backgroundColor: colors.blueAccent[700] }}>
             <TableCell>Designation</TableCell>
-            <TableCell>Tax (PKR)</TableCell>
+            <TableCell>Tax (Birr)</TableCell>
             <TableCell>Actions</TableCell>
           </TableRow>
         </TableHead>
@@ -854,66 +868,103 @@ const handleEditedAllowanceChange = (e) => {
       />
     </Box>
     <Dialog open={showForm} onClose={() => setShowForm(false)}>
+      {
+        isloading ? 
+       <div className="w-[400px] absolute top-[200] h-[100px] pl-[100px] bg-red-500 flex item-center justify-center"><CircularProgress /> </div> : null
+      }
       <DialogTitle style={{ textAlign: 'center', fontWeight: 'bold' }}>Payslip</DialogTitle>
       <DialogContent>
-        <div>
-          <p>Start Date: {startDate}</p>
-          <p>End Date: {endDate}</p>
-        </div>
-        <table style={{ width: '100%' }}>
-          <tbody>
-            <tr>
-              <td>Name:</td>
-              <td>{payslipData && payslipData.name}</td>
-            </tr>
-            <tr>
-              <td>Employee ID:</td>
-              <td>{payslipData && payslipData.employeeId}</td>
-            </tr>
-            <tr>
-              <td>Designation:</td>
-              <td>{payslipData && payslipData.designation}</td>
-            </tr>
-            <tr>
-              <td>Email:</td>
-              <td>{payslipData && payslipData.email}</td>
-            </tr>
-            <tr>
-              <td>Basic Salary:</td>
-              <td>PKR {payslipData && payslipData.basicSalary.toFixed(2)}</td>
-            </tr>
-            <tr>
-              <td>Allowances added:</td>
-              <td>
-                <ul>
-                  {payslipData &&
-                    payslipData.allowances.map((allowance, index) => (
-                      <li key={index}>{allowance.name}: PKR {allowance.value.toFixed(2)}</li>
-                    ))}
-                </ul>
-              </td>
-            </tr>
-            <tr>
-              <td>Salary:</td>
-              <td>PKR {payslipData && payslipData.sub_total.toFixed(2)}</td>
-            </tr>
-            <tr>
-              <td colSpan="2"><hr style={{ width: '100%', marginBottom: '10px' }} /></td>
-            </tr>
-            <tr>
-              <td>Tax Deducted:</td>
-              <td>PKR {payslipData && payslipData.taxAmount.toFixed(2)}</td>
-            </tr>
-            <tr>
-              <td colSpan="2"><hr style={{ width: '100%', marginBottom: '10px' }} /></td>
-            </tr>
-            <tr>
-              <td>Total Salary:</td>
-              <td>PKR {payslipData && (payslipData.totalSalary).toFixed(2)}</td>
-            </tr>
-          </tbody>
-        </table>
-      </DialogContent>
+  <Box sx={{ mb: 3 }}>
+    <Typography variant="subtitle2" color="textSecondary">
+      Pay Period: {moment(startDate).format("MMM D, YYYY")} - {moment(endDate).format("MMM D, YYYY")}
+    </Typography>
+  </Box>
+
+  <TableContainer component={Paper} variant="outlined">
+    <Table size="small">
+      <TableBody>
+        <TableRow>
+          <TableCell variant="head">Name</TableCell>
+          <TableCell>{payslipData?.name || '-'}</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell variant="head">Employee ID</TableCell>
+          <TableCell>{payslipData?.employeeId || '-'}</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell variant="head">Designation</TableCell>
+          <TableCell>{payslipData?.designation || '-'}</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell variant="head">Email</TableCell>
+          <TableCell>{payslipData?.email || '-'}</TableCell>
+        </TableRow>
+        
+        <TableRow>
+          <TableCell colSpan={2} sx={{ bgcolor: 'background.default' }}>
+            <Typography variant="subtitle1">Earnings</Typography>
+          </TableCell>
+        </TableRow>
+        
+        <TableRow>
+          <TableCell>Basic Salary</TableCell>
+          <TableCell>Birr {payslipData?.basicSalary?.toFixed(2) || '0.00'}</TableCell>
+        </TableRow>
+        
+        <TableRow>
+          <TableCell>Allowances</TableCell>
+          <TableCell>
+            <List dense sx={{ py: 0 }}>
+              {payslipData?.allowances?.map((allowance, index) => (
+                <ListItem key={index} disableGutters>
+                  <ListItemText 
+                    primary={`${allowance.name}`}
+                    secondary={`Birr ${allowance.value?.toFixed(2)}`}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </TableCell>
+        </TableRow>
+
+        <TableRow>
+          <TableCell variant="head">Sub Total</TableCell>
+          <TableCell variant="head">
+            Birr {payslipData?.sub_total?.toFixed(2) || '0.00'}
+          </TableCell>
+        </TableRow>
+
+        <TableRow>
+          <TableCell colSpan={2} sx={{ bgcolor: 'background.default' }}>
+            <Typography variant="subtitle1">Deductions</Typography>
+          </TableCell>
+        </TableRow>
+
+        <TableRow>
+          <TableCell>Tax Deducted</TableCell>
+          <TableCell>Birr {payslipData?.taxAmount?.toFixed(2) || '0.00'}</TableCell>
+        </TableRow>
+        
+        <TableRow>
+          <TableCell>Attendance Deduction</TableCell>
+          <TableCell>
+            Birr {payslipData?.attendanceamount?.toFixed(2) || '0.00'}
+            <Typography variant="caption" display="block" color="textSecondary">
+              Days Absent in % : {payslipData?.attendancededuction || 0}
+            </Typography>
+          </TableCell>
+        </TableRow>
+
+        <TableRow>
+          <TableCell variant="head">Net Salary</TableCell>
+          <TableCell variant="head" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}>
+            Birr {(payslipData?.totalSalary || 0).toFixed(2)}
+          </TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
+  </TableContainer>
+</DialogContent>
       <DialogActions style={{ justifyContent: 'center' }}>
         <IconButton>
           <SendIcon />
