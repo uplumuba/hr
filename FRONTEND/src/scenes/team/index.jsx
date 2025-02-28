@@ -148,6 +148,7 @@ const Team = () => {
   };
 
   const handleConfirmDelete = () => {
+
     const { id, fullName } = deleteConfirmation.employeeInfo;
     console.log(`Deleting employee with ID: ${id}`);
   
@@ -222,6 +223,7 @@ const Team = () => {
  
   ];
   const [activeTab, setActiveTab] = useState("viewAllEmployees");
+  const [loading,setloading]=useState(false)
  
  
   const [employeeData, setEmployeeData] = useState([]);
@@ -298,10 +300,15 @@ const [error, setError] = useState()
 const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
+const isValidFirstNameandLAstname=(name)=>{
+  return /^[a-zA-Z]+$/.test(name)
+}
 
 
 const handleSubmit = async (e) => {
   e.preventDefault();
+ 
+
   const emptyFields = Object.keys(values).filter(key => !values[key]);
 
   if (emptyFields.length > 0) {
@@ -309,6 +316,14 @@ const handleSubmit = async (e) => {
     const emptyFieldsMessage = emptyFields.map(field => `${field.charAt(0).toUpperCase() + field.slice(1)}`).join(', ');
     alert(`The following fields are required: ${emptyFieldsMessage}. Please fill them.`);
     return; // Stop the submission process if any field is empty
+  }
+  if(!isValidFirstNameandLAstname(values.firstName)){
+    alert("Please enter a valid first name")
+    return;
+  }
+  if(!isValidFirstNameandLAstname(values.lastName)){
+    alert("Please enter a valid last name")
+    return;
   }
 
   // Check if profilePic is not empty
@@ -328,10 +343,12 @@ const handleSubmit = async (e) => {
     alert("Please enter a valid email address.");
     return; // Stop the submission process if email is not in correct format
   }
+  setloading(true)
   const cv = await upload(profileCv)
   const pic = await upload(profilePic)
   console.log(values)
   // console.log(profileCv, profilePic)
+
   try {
     await axiosInstance.post("http://localhost:5000/api/add_employee", {
       ...values,
@@ -358,13 +375,16 @@ const handleSubmit = async (e) => {
     setProfileCv(null);
     setProfilePic(null);
     alert("Employee added successfully!");
+    setloading(false)
 
     // If the request is successful, you can perform any additional actions here
   }
     catch (error) {
+      setloading(false)
       console.log(error)
       setProfileCv(null)
       setProfilePic(null)
+     
   }
   
   // console.log(values)
@@ -490,7 +510,10 @@ const [leaving, setLeaving] = useState("");
  /////////////////////////////////////////////////////////////////////////////////
  
   return (
-    <Box m="20px">
+    <Box sx={{
+      textAlign: "center",
+      fontSize:40
+    }} m="20px">
     <Header title="EMPLOYEES" subtitle="Managing the Employees " />
     <Tabs value={activeTab} onChange={handleTabChange}>
       <Tab label="Add Employee" value="addEmployee" />
@@ -499,7 +522,7 @@ const [leaving, setLeaving] = useState("");
     </Tabs>
  
     {activeTab === "addEmployee" && (
-      <Box m="20px">
+      <Box m="20px" >
         <Header title="" subtitle="ADD A NEW EMPLOYEE" />
         <Formik
           initialValues={values}
@@ -508,6 +531,7 @@ const [leaving, setLeaving] = useState("");
         >
           {({ values, errors, touched,handleBlur,handleChange}) => (
             <form onSubmit={handleSubmit}>
+           
               <Box
                 display="grid"
                 gap="30px"
@@ -728,8 +752,8 @@ const [leaving, setLeaving] = useState("");
             </Box>
               </Box>
               <Box display="flex" justifyContent="end" mt="20px">
-                <Button color="secondary" variant="contained" type="submit">
-                  Add Employee
+                <Button color="secondary"  disabled={loading} variant="contained" type="submit">
+                  {loading ? "Loading..." : "Add Employee"}
                 </Button>
                 
                 <div>

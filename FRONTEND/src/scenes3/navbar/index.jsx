@@ -93,14 +93,7 @@ const Navbar = () => {
                             color: 'black',
                         }}
                     >
-                        <img
-                            src={codistan_logo_bg_remove}
-                            alt="Codistan Logo"
-                            width="120"
-                            height="90"
-                            viewBox="0 0 29 30"
-                            style={{ marginRight: '1rem' }}
-                        />
+                      
                         <span>
                             <Typography variant="h5" style={{ fontFamily: 'Arial, sans-serif', fontWeight: 'bold' }}>JobPortal</Typography>
                         </span>

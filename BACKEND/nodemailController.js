@@ -35,8 +35,8 @@ exports. getEmailCount = async (req, res) => {
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'amarahabib630@gmail.com',
-    pass: 'ismy ldlr kgcs mvzi'
+    user: 'ashenafie.wale@gmail.com',
+    pass: 'dxvr wcvc opmq mrqh'
   }
 });
 
@@ -44,7 +44,7 @@ exports.sendEmail = (req, res) => {
   const { to, subject, text } = req.body;
 
   const mailOptions = {
-    from: 'amarahabib630@gmail.com',
+    from: 'ashenafie.wale@gmail.com',
     to: to,
     subject: subject,
     text: text

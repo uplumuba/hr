@@ -59,7 +59,7 @@ const Banner = (props) => {
                     color: '#444444',
                 }}
             >
-                Thousands of jobs in Codistan Ventures are waiting for you.
+                Thousands of jobs in Edu portal are waiting for you.
             </Typography>
             
             <Box
