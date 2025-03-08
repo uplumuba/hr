@@ -128,7 +128,7 @@ const Navbar = () => {
                                     onMouseEnter={(e) => { e.target.style.color = '#007bff'; }} // Change color on hover
                                      onMouseLeave={(e) => { e.target.style.color = '#444444'; }} 
                                    
-                                    activeStyle={{
+                                    activestyle={{
                                         fontWeight: 'bold',
                                         color: '#007bff', // Dark blue color for active link
                                     }}

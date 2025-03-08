@@ -165,7 +165,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "./utilis/AuthContext"; // Import useAuth hook from AuthContext
 import axios from "axios";
 
-const Login = ({ onLoginClick, handleSignUpClick }) => {
+const Login = ({ onLoginClick,handleresetclickemployee, handleSignUpClick ,handleResetclicked}) => {
   const [loginType, setLoginType] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -173,6 +173,7 @@ const Login = ({ onLoginClick, handleSignUpClick }) => {
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
+  const [showResetPasswordButton, setShowResetPasswordButton] = useState(false);
   const [showSignUpButton, setShowSignUpButton] = useState(false); // State to track whether to show the SignUp button
   const { login, currentUser } = useAuth(); // Destructure login function from useAuth hook
   const navigate = useNavigate();
@@ -203,6 +204,7 @@ const Login = ({ onLoginClick, handleSignUpClick }) => {
     setPasswordError("");
     setShowPassword(false);
     setShowSignUpButton(type === "applicant");
+    setShowResetPasswordButton(type === "employee");
   };
 
   const handleSubmit = async () => {
@@ -272,6 +274,9 @@ const Login = ({ onLoginClick, handleSignUpClick }) => {
         return null;
     }
   };
+  const handleResetClicked = () => {
+    handleResetclicked();
+  }
 
   return (
     <div className="login-container">
@@ -313,13 +318,27 @@ const Login = ({ onLoginClick, handleSignUpClick }) => {
           <p>Sign in</p>
         </div>
         {showSignUpButton && (
+          <>
           <p>
             Not registered yet?{" "}
             <button onClick={handleSignUp} className="sign-up-B">
               Sign Up
             </button>
           </p>
+          <p className="reset-password" onClick={handleResetClicked}>
+          Forgot Password? click here
+        </p>
+        </>
         )}
+        {
+          showResetPasswordButton && (
+            <p className="reset-password" onClick={handleresetclickemployee}>
+              Forgot Password? click here
+            </p>
+          )
+        }
+       
+        
         {renderWelcomeMessage()}
         <div className="input-container username-container">
           <input

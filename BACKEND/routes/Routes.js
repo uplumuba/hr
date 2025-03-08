@@ -13,6 +13,10 @@ router.get('/email-count',verifyToken, emailController.getEmailCount);
 // Define routes
 router.post('/send-email', verifyToken, emailController.sendEmail);
 router.get('/email-count',verifyToken, emailController.getEmailCount);
+router.post('/send-reset-email', emailController.sendResetApplicantEmail);
+router.post('/send-reset-employee-email', emailController.sendResetEmployeeEmail);
+router.post('/change-employee-password', emailController.changeEmployeePassword);
+router.post('/change-password', emailController.changePassword);
 
 // admin
 router.post('/add_admin', controller.add_admin);

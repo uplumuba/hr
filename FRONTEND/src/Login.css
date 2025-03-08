@@ -2,6 +2,7 @@
  
 body {
     margin: 0;
+
    
 }
  
@@ -22,7 +23,10 @@ body {
     display: flex;
     justify-content: space-between;
     height: 100vh;
+    padding-bottom: 50;
     overflow: hidden;
+   
+  
 }
  
 .left-side {
@@ -137,7 +141,7 @@ body {
  
 .input-container {
    
-    margin-bottom: 20px;
+    margin-bottom: 0px;
     position: relative;
 }
  
@@ -209,7 +213,7 @@ body {
     cursor: pointer;
     border: none;
     font-size: 16px;
-    margin-top: 50px;
+    margin-top: 20px;
     border-radius: 5px;
     transition: filter 0.3s ease-in-out;
 }

@@ -32,8 +32,12 @@ import Payroll from "./scenes/Payroll";
 import { Settings } from "@mui/icons-material";
 import Setting from "./scenes3/profile/settings";
 import Homesetting from "./scenes3/pages/homesetting";
-import HomeJoblists from "./scenes3/pages/HomeJoblists"
+import HomeJoblists from "./scenes3/pages/HomeJoblists";
+import ResetPasswordPage from "./ResetPassword";
+import SendEmailPage from "./sendmail";
 import { useAuth } from "./utilis/AuthContext";
+import SendEmployeEmail from "./SendEmployeEmail";
+import ResetEmployePage from "./ResetEmployePage";
 
 
 
@@ -63,19 +67,28 @@ function App() {
     setLoggedIn(true) // Set the state to true when sign-up button is clicked
     navigate('/signUp');// Set the state to true when sign-up button is clicked
     };
+const handleResetClicked = () => {
+  console.log('Reset clicked!');
+  // setIsSignUpClicked(true);
+  setLoggedIn(true) // Set the state to true when sign-up button is clicked
+  navigate('/send-email');// Set the state to true when sign-up button is clicked
+  };
+  const handlePasswordChangeClick = () => {
+    console.log('Reset clicked!');
+    // setIsSignUpClicked(true);
+    setLoggedIn(true) // Set the state to true when sign-up button is clicked
+    navigate('/send-email/employee');// Set the state to true when sign-up button is clicked
+    }
+ 
 
     
   
-    useEffect(() => {
-      // Redirect to the default route or login page when the component mounts
-      navigate('/');
-    }, []);
-
+   
 
   return (
     
     <div className="w-screen overflow-hidden">
-      {!isLoggedIn && <Login onLoginClick={handleLoginClick} handleSignUpClick={handleSignUpClick} />}
+      {!isLoggedIn && <Login onLoginClick={handleLoginClick}  handleresetclickemployee={handlePasswordChangeClick}  handleResetclicked={handleResetClicked} handleSignUpClick={handleSignUpClick} />}
       {isLoggedIn && (
         <>
           {loginType === 'admin' && (
@@ -150,11 +163,34 @@ function App() {
       )}
       <Routes>
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/reset-password" element={<ResetPasswordPage handleloginclicked={()=>{
+          setLoggedIn(false)
+          navigate('/')
+        }}  />} />
+      <Route path="/send-email/employee" element={<SendEmployeEmail handleemppasswordclicked={
+          ()=>{
+            setLoggedIn(true) // Set the state to true when sign-up button is clicked
+            navigate('/reset-password/employee');// Set the state to true when sign-up button is clicked
+          }
+      
+         } />} />
+         <Route path="/reset-password/employee" element={<ResetEmployePage handleloginclicked={()=>{
+          setLoggedIn(false)
+          navigate('/')
+         }}  />} />
+
+        <Route path="/send-email" element={<SendEmailPage handlepasswordclicked={
+          ()=>{
+            setLoggedIn(true) // Set the state to true when sign-up button is clicked
+            navigate('/reset-password');// Set the state to true when sign-up button is clicked
+          }
+        } />} />
         <Route path="/get_job/:id" element={<JobDetails />} />
         {/* <Route path="/profile" element={<Setting />} /> */}
         {/* <Route path="/profilesetting" element={<Homesetting />} /> */}
 
       </Routes>
+    
     </div>
     
   );
